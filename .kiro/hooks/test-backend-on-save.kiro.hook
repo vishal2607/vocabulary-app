@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Test Backend on Save",
+  "description": "Automatically run relevant pytest tests when backend Python files are edited to catch bugs immediately",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "backend/app/**/*.py"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The file was just edited. Run the relevant pytest tests for this file to make sure nothing broke. If tests pass, just say 'Tests passed ✓'. If tests fail, show me the error and suggest a fix."
+  }
+}

@@ -1,0 +1,24 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - cd frontend
+        - npm ci
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: frontend/dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - frontend/node_modules/**/*
+backend:
+  phases:
+    build:
+      commands:
+        - cd backend
+        - pip3 install -r requirements-prod.txt
+        - python3 -c "from app.database import init_db; init_db()"
