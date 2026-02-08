@@ -1,0 +1,24 @@
+# Elastic Beanstalk ignore file
+# These files/folders will NOT be uploaded to EB
+
+# Virtual environment (EB creates its own)
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+tests/
+
+# Development
+.DS_Store
+.env
+*.db
+
+# Git
+.git/
+.gitignore
