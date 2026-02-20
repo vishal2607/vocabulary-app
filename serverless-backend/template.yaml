@@ -5,7 +5,7 @@ Description: Vocabulary Visualization App - Serverless Backend
 Globals:
   Function:
     Timeout: 30
-    Runtime: python3.11
+    Runtime: python3.13
     Environment:
       Variables:
         VOCAB_TABLE: !Ref VocabularyTable
@@ -16,6 +16,11 @@ Globals:
       AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
       AllowHeaders: "'Content-Type,Authorization'"
       AllowOrigin: "'*'"
+    Auth:
+      DefaultAuthorizer: CognitoAuthorizer
+      Authorizers:
+        CognitoAuthorizer:
+          UserPoolArn: !GetAtt CognitoUserPool.Arn
 
 Resources:
   # Cognito User Pool
@@ -93,8 +98,6 @@ Resources:
           Properties:
             Path: /vocab
             Method: get
-            Auth:
-              Authorizer: CognitoAuthorizer
 
   CreateVocabFunction:
     Type: AWS::Serverless::Function
@@ -110,8 +113,6 @@ Resources:
           Properties:
             Path: /vocab
             Method: post
-            Auth:
-              Authorizer: CognitoAuthorizer
 
   UpdateVocabFunction:
     Type: AWS::Serverless::Function
@@ -127,8 +128,6 @@ Resources:
           Properties:
             Path: /vocab/{id}
             Method: put
-            Auth:
-              Authorizer: CognitoAuthorizer
 
   DeleteVocabFunction:
     Type: AWS::Serverless::Function
@@ -144,8 +143,6 @@ Resources:
           Properties:
             Path: /vocab/{id}
             Method: delete
-            Auth:
-              Authorizer: CognitoAuthorizer
 
   GetCategoriesFunction:
     Type: AWS::Serverless::Function
@@ -161,8 +158,6 @@ Resources:
           Properties:
             Path: /categories
             Method: get
-            Auth:
-              Authorizer: CognitoAuthorizer
 
   CreateCategoryFunction:
     Type: AWS::Serverless::Function
@@ -178,19 +173,6 @@ Resources:
           Properties:
             Path: /categories
             Method: post
-            Auth:
-              Authorizer: CognitoAuthorizer
-
-  # API Gateway Authorizer
-  CognitoAuthorizer:
-    Type: AWS::ApiGateway::Authorizer
-    Properties:
-      Name: CognitoAuthorizer
-      Type: COGNITO_USER_POOLS
-      IdentitySource: method.request.header.Authorization
-      RestApiId: !Ref ServerlessRestApi
-      ProviderARNs:
-        - !GetAtt CognitoUserPool.Arn
 
 Outputs:
   ApiEndpoint:
