@@ -1,12 +1,10 @@
-export const awsConfig = {
+import type { ResourcesConfig } from 'aws-amplify';
+
+export const awsConfig: ResourcesConfig = {
   Auth: {
     Cognito: {
       userPoolId: 'us-east-1_0jVsMXVBH',
       userPoolClientId: '3i06obe1h9mm2ltt7kn2b3c76a',
-      signUpVerificationMethod: 'code',
-      loginWith: {
-        email: true,
-      },
     },
   },
   API: {

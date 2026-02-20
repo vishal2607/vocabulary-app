@@ -14,9 +14,10 @@ export interface VocabEntry {
 }
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
-  created_at: string;
+  email?: string;
+  created_at?: string;
 }
 
 export interface Category {
@@ -52,7 +53,7 @@ export interface ApiResponse<T> {
 }
 
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
   remember?: boolean;
 }
@@ -63,6 +64,7 @@ export interface LoginResponse {
 }
 
 export interface RegisterRequest {
+  email: string;
   username: string;
   password: string;
 }

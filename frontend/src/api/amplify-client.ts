@@ -232,11 +232,11 @@ class AmplifyApiClient {
   }
 
   // CSV methods (placeholder - will implement later)
-  async uploadCSV(file: File, encoding?: string): Promise<ImportResult> {
+  async uploadCSV(): Promise<ImportResult> {
     throw new Error('CSV upload not yet implemented in serverless version');
   }
 
-  async exportCSV(entryIds?: number[]): Promise<Blob> {
+  async exportCSV(): Promise<Blob> {
     throw new Error('CSV export not yet implemented in serverless version');
   }
 }

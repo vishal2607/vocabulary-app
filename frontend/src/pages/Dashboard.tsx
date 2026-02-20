@@ -1,7 +1,7 @@
 // Main dashboard for vocabulary management
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { apiClient } from '../api/client';
+import { apiClient } from '../api/amplify-client';
 import type { VocabEntry, Category } from '../types';
 import VocabList from '../components/VocabList';
 import EntryForm from '../components/EntryForm';
@@ -54,8 +54,7 @@ const Dashboard: React.FC = () => {
       setShowAddForm(false);
       await loadData();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error?.message || 'Failed to create entry';
-      alert(errorMessage);
+      alert(err.message || 'Failed to create entry');
     }
   };
 
@@ -66,8 +65,7 @@ const Dashboard: React.FC = () => {
       setEditingEntry(null);
       await loadData();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error?.message || 'Failed to update entry';
-      alert(errorMessage);
+      alert(err.message || 'Failed to update entry');
     }
   };
 
@@ -77,8 +75,7 @@ const Dashboard: React.FC = () => {
       await apiClient.deleteEntry(id);
       await loadData();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error?.message || 'Failed to delete entry';
-      alert(errorMessage);
+      alert(err.message || 'Failed to delete entry');
     }
   };
 
@@ -92,12 +89,10 @@ const Dashboard: React.FC = () => {
     if (!file) return;
 
     try {
-      const result = await apiClient.uploadCSV(file);
-      alert(`Import complete: ${result.imported_count} imported, ${result.skipped_count} skipped, ${result.error_count} errors`);
-      await loadData();
+      await apiClient.uploadCSV();
+      alert('CSV import not yet implemented in serverless version');
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error?.message || 'Failed to upload CSV';
-      alert(errorMessage);
+      alert(err.message || 'Failed to upload CSV');
     }
     // Reset file input
     event.target.value = '';
@@ -105,18 +100,10 @@ const Dashboard: React.FC = () => {
 
   const handleCSVExport = async () => {
     try {
-      const blob = await apiClient.exportCSV();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `vocab_export_${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      await apiClient.exportCSV();
+      alert('CSV export not yet implemented in serverless version');
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error?.message || 'Failed to export CSV';
-      alert(errorMessage);
+      alert(err.message || 'Failed to export CSV');
     }
   };
 

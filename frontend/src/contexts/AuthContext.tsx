@@ -1,6 +1,6 @@
 // Authentication context for managing user state
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { apiClient } from '../api/client';
+import { apiClient } from '../api/amplify-client';
 import type { User, LoginRequest, RegisterRequest } from '../types';
 
 interface AuthContextType {
@@ -33,15 +33,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     // Check if user is already logged in
     const validateSession = async () => {
-      const token = apiClient.getToken();
-      if (token) {
-        try {
-          const response = await apiClient.validateSession();
-          setUser(response.user);
-        } catch (error) {
-          // Token is invalid, clear it
-          apiClient.clearAuthToken();
-        }
+      try {
+        const response = await apiClient.validateSession();
+        setUser(response.user);
+      } catch (error) {
+        // No valid session
+        setUser(null);
       }
       setLoading(false);
     };
@@ -57,7 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (credentials: RegisterRequest) => {
     await apiClient.register(credentials);
     // After registration, automatically log in
-    await login({ username: credentials.username, password: credentials.password });
+    await login({ email: credentials.email, password: credentials.password });
   };
 
   const logout = async () => {
