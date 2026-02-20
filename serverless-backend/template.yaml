@@ -1,0 +1,214 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Vocabulary Visualization App - Serverless Backend
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: python3.11
+    Environment:
+      Variables:
+        VOCAB_TABLE: !Ref VocabularyTable
+        CATEGORY_TABLE: !Ref CategoryTable
+        USER_POOL_ID: !Ref CognitoUserPool
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+      AllowHeaders: "'Content-Type,Authorization'"
+      AllowOrigin: "'*'"
+
+Resources:
+  # Cognito User Pool
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: vocabulary-app-users
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: vocabulary-app-client
+      UserPoolId: !Ref CognitoUserPool
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      GenerateSecret: false
+
+  # DynamoDB Tables
+  VocabularyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: vocabulary-entries
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: entryId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: entryId
+          KeyType: RANGE
+
+  CategoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: vocabulary-categories
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: categoryId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: categoryId
+          KeyType: RANGE
+
+  # Lambda Functions
+  GetVocabFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/vocab/
+      Handler: get_vocab.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref VocabularyTable
+      Events:
+        GetVocab:
+          Type: Api
+          Properties:
+            Path: /vocab
+            Method: get
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  CreateVocabFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/vocab/
+      Handler: create_vocab.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref VocabularyTable
+      Events:
+        CreateVocab:
+          Type: Api
+          Properties:
+            Path: /vocab
+            Method: post
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  UpdateVocabFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/vocab/
+      Handler: update_vocab.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref VocabularyTable
+      Events:
+        UpdateVocab:
+          Type: Api
+          Properties:
+            Path: /vocab/{id}
+            Method: put
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  DeleteVocabFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/vocab/
+      Handler: delete_vocab.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref VocabularyTable
+      Events:
+        DeleteVocab:
+          Type: Api
+          Properties:
+            Path: /vocab/{id}
+            Method: delete
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  GetCategoriesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/categories/
+      Handler: get_categories.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref CategoryTable
+      Events:
+        GetCategories:
+          Type: Api
+          Properties:
+            Path: /categories
+            Method: get
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  CreateCategoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/categories/
+      Handler: create_category.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CategoryTable
+      Events:
+        CreateCategory:
+          Type: Api
+          Properties:
+            Path: /categories
+            Method: post
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  # API Gateway Authorizer
+  CognitoAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: CognitoAuthorizer
+      Type: COGNITO_USER_POOLS
+      IdentitySource: method.request.header.Authorization
+      RestApiId: !Ref ServerlessRestApi
+      ProviderARNs:
+        - !GetAtt CognitoUserPool.Arn
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  
+  UserPoolId:
+    Description: "Cognito User Pool ID"
+    Value: !Ref CognitoUserPool
+  
+  UserPoolClientId:
+    Description: "Cognito User Pool Client ID"
+    Value: !Ref CognitoUserPoolClient
+  
+  VocabularyTableName:
+    Description: "DynamoDB Vocabulary Table"
+    Value: !Ref VocabularyTable
+  
+  CategoryTableName:
+    Description: "DynamoDB Category Table"
+    Value: !Ref CategoryTable

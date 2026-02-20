@@ -320,3 +320,6 @@ The technology stack was chosen to be:
 6. **Job-relevant**: Skills that transfer to professional development
 
 Every choice prioritizes **simplicity** and **getting things working quickly** while maintaining **quality** and **best practices**.
+
+Given our February Monthly Business Review is scheduled for Feb 18th, I have a scheduling conflict. Would the following Wednesday, February 25th from 2:30-3:30PM work for you instead? I can send an updated 
+invitation if this time suits you.
